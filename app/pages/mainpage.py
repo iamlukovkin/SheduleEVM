@@ -24,6 +24,10 @@ def buttons_widget() -> Frame:
             'Обновить базу данных',
             update_database
         ],
+        'MakeSchedule': [
+            'Составить расписание',
+            get_tutor_name
+        ],
         'Exit': [
             'Выход',
             exit_app

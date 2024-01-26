@@ -14,3 +14,4 @@ APP_RESOLUTION: dict = configurations['APP']['Window']
 APP_ICON: str = configurations['APP']['Icon']
 
 FOLDERS: dict = configurations['Folders']
+DATABASE: dict[str, str] = configurations['Database']

@@ -3,19 +3,24 @@
 import os
 import subprocess
 import config
-from interface import my_app
+import database
 import tkinter as tk
+
+from interface import *
 from .downloading_files import download_graphs
+from .parsing_tables import refresh_graphs
+from .create_table import *
 
 def open_folder():
     """Open folder with schedule"""
-    folder_path = config.FOLDERS['Shedule']
+    folder_path = config.FOLDERS['MainSheedule']
     subprocess.run(["open", folder_path])
 
 
 def exit_app():
     """Exit the application"""
     my_app.close()
+    database.close_connection()
     exit()
 
 
@@ -24,14 +29,36 @@ def download_tables():
     for file in os.listdir(config.FOLDERS['Shedule']):
         os.remove(os.path.join(config.FOLDERS['Shedule'], file))
     download_graphs(config.FOLDERS['Shedule'])
-    popup: tk.Toplevel = tk.Toplevel()
-    popup.title(config.APP_SHORT_NAME)
-    popup.geometry('200x100')
-    popup.resizable(width=False, height=False)
-    label: tk.Label = tk.Label(popup, text='Успешно!')
-    button: tk.Button = tk.Button(popup, text='Закрыть', command=popup.destroy)
-    label.pack()
-    button.pack()
+   
+
+def update_database():
+    """Update database"""
+    # download_graphs(config.FOLDERS['Shedule'])
+    lessons: list[dict[str, str]] = refresh_graphs(config.FOLDERS['Shedule'])
+    database.add_lessons(lessons)
+    send_notification(f'База обновлена. Добавлено {len(lessons)} занятий.')
 
 
-update_database: callable = lambda: print('Обновить базу данных')
+def get_tutor_name():
+    input_dialog = tk.Toplevel(my_app)
+    input_label = tk.Label(input_dialog, text="Введите ФИО преподавателя (полностью):")
+    input_label.pack()
+    user_entry = tk.Entry(input_dialog)
+    user_entry.pack()
+    submit_button = tk.Button(input_dialog, text="Submit", command=lambda: process_user_input(user_entry.get(), input_dialog))
+    submit_button.pack()
+
+
+def process_user_input(data, input_dialog):
+    if data:
+        make_schedule(data)
+        send_notification(f'Расписание создано.')
+    else:
+        send_notification(f'Не указано ФИО преподавателя.')
+    input_dialog.destroy()
+
+
+def make_schedule(tutor: str):
+    matrix, tutor_formated = database.get_tutor_matrix(tutor)
+    dst_path: str = config.FOLDERS['TutorSheedule'] + tutor_formated + ' (расписание).xlsx'
+    create_table(dst_path, matrix)

@@ -18,15 +18,26 @@ def refresh_graphs(directory: str):
     Returns:
         list: list of lessons
     """
-    lessons = []
+    lessons: list = []
     warnings.filterwarnings("ignore", category=UserWarning)
     for filename in os.listdir(directory):
+        if not filename.endswith('.xlsx'):
+            continue
         my_sheet = read_excel(directory + filename)
         matrix = convert_to_list_of_lists(my_sheet)
         cropped_matrix = crop_matrix(matrix)
         finded_lessons = find_lesson(cropped_matrix)
         [lessons.append(lesson) for lesson in finded_lessons if None not in lesson]
-    return lessons
+    
+    final_array: list = []
+    for lesson in lessons:
+        final_array.append(
+            {
+                'group': 'gr_' + lesson[0], 'day': lesson[1], 
+                'time': lesson[2], 'week': lesson[3], 'lesson': lesson[4]
+            }
+        )
+    return final_array
 
 
 def read_excel(path: str):
@@ -49,7 +60,6 @@ def read_excel(path: str):
                             coordinate = get_column_letter(my_cell[1]) + str(my_cell[0]) 
                             if value is not None: 
                                 my_sheet[coordinate].value = value
-    os.remove(path) 
     return my_sheet
 
 
@@ -98,5 +108,5 @@ def get_lesson_info(row: list, matrix: list):
     day = day.replace(' ', '')
     time = time.replace(' ', '')
     week = week.replace(' ', '')
-    week = 'Знаменатель' if week == 'Знам.' else 'Числитель'
+    week = 'Знаменатель' if 'знам' in week.lower() else 'Числитель'
     return day.capitalize(), time, week

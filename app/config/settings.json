@@ -10,6 +10,14 @@
     },
 
     "Folders": {
-        "Shedule": "../Расписание/"
+        "Shedule": "../Расписание/Общее/",
+        "TutorSheedule": "../Расписание/Преподаватели/",
+        "MainSheedule": "../Расписание/"
+    },
+    "Database": {
+        "Name": "shedule.db",
+        "Path": "./shedule.db",
+        "Type": "SQLite",
+        "ConnectionString": "sqlite:///shedule.db"
     }
 }

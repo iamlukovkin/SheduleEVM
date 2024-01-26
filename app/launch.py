@@ -2,6 +2,7 @@
 
 from interface import my_app
 from pages import main_page
+import database
 
 def main():
     main_page()
