@@ -7,7 +7,7 @@ import database
 import tkinter as tk
 
 from interface import *
-from .downloading_files import download_graphs
+from .downloading_files import download_tables as download_all_tables
 from .parsing_tables import refresh_graphs
 from .create_table import *
 
@@ -28,12 +28,12 @@ def download_tables():
     """Download tables from https://rsreu.ru/studentu/raspisanie-zanyatij"""
     for file in os.listdir(config.FOLDERS['Shedule']):
         os.remove(os.path.join(config.FOLDERS['Shedule'], file))
-    download_graphs(config.FOLDERS['Shedule'])
+    download_all_tables(config.FOLDERS['Shedule'])
    
 
 def update_database():
     """Update database"""
-    # download_graphs(config.FOLDERS['Shedule'])
+    # download_tables()
     lessons: list[dict[str, str]] = refresh_graphs(config.FOLDERS['Shedule'])
     database.add_lessons(lessons)
     send_notification(f'База обновлена. Добавлено {len(lessons)} занятий.')
@@ -60,5 +60,11 @@ def process_user_input(data, input_dialog):
 
 def make_schedule(tutor: str):
     matrix, tutor_formated = database.get_tutor_matrix(tutor)
+    if matrix is None:
+        send_notification(f'Не удалось получить расписание.\nПроверьте правильность написания ФИО.')
+        return
+    elif not matrix:
+        send_notification(f'Расписание для преподавателя {tutor_formated} отсутствует.')
+        return
     dst_path: str = config.FOLDERS['TutorSheedule'] + tutor_formated + ' (расписание).xlsx'
     create_table(dst_path, matrix)

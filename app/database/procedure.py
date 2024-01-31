@@ -2,6 +2,7 @@ from .models import *
 from .connection import *
 from sqlalchemy import text
 
+
 def add_lessons(lessons: list[dict]):
     """Add lessons to database."""
     with get_connection() as conn:
@@ -53,14 +54,19 @@ def get_matrix_with_times(tutor_formats: list, session):
         _times.sort()
         for time in _times: temp.append([time, day])
         
-    return temp
+    return temp, len(_times)
 
 
 def get_tutor_matrix(tutor: str):
     """Get tutor matrix."""
     session = get_session()
+    if session.query(Lesson).count() == 0:
+        session.close()
+        return False, None
     tutor_formats: list[str] = get_tutor_variants(tutor)
-    matrix = get_matrix_with_times(tutor_formats, session)
+    matrix, counter = get_matrix_with_times(tutor_formats, session)
+    if counter == 0:
+        return None, None
     for row in matrix:
         for week in ['Числитель', 'Знаменатель']:
             result = None

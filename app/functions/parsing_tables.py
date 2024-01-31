@@ -23,8 +23,10 @@ def refresh_graphs(directory: str):
     for filename in os.listdir(directory):
         if not filename.endswith('.xlsx'):
             continue
+        print(filename)
         my_sheet = read_excel(directory + filename)
         matrix = convert_to_list_of_lists(my_sheet)
+        print(matrix[:5])
         cropped_matrix = crop_matrix(matrix)
         finded_lessons = find_lesson(cropped_matrix)
         [lessons.append(lesson) for lesson in finded_lessons if None not in lesson]
@@ -71,7 +73,11 @@ def convert_to_list_of_lists(my_sheet):
 
 
 def crop_matrix(matrix: list):
-    index_start = matrix.index([row for row in matrix if row[0] == 'Дни'][0])
+    
+    index_start = 0
+    while matrix[index_start][0] != 'Дни':
+        index_start += 1
+
     matrix = matrix[index_start:]
     for row in matrix:
         for cell in row:
