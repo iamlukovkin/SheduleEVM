@@ -28,6 +28,10 @@ def buttons_widget() -> Frame:
             'Составить расписание',
             get_tutor_name
         ],
+        'MakeGroupSchedule': [
+            'Составить расписание группы',
+            get_group_name
+        ],
         'Exit': [
             'Выход',
             exit_app

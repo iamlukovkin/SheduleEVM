@@ -23,13 +23,15 @@ def refresh_graphs(directory: str):
     for filename in os.listdir(directory):
         if not filename.endswith('.xlsx'):
             continue
-        print(filename)
-        my_sheet = read_excel(directory + filename)
-        matrix = convert_to_list_of_lists(my_sheet)
-        print(matrix[:5])
-        cropped_matrix = crop_matrix(matrix)
-        finded_lessons = find_lesson(cropped_matrix)
-        [lessons.append(lesson) for lesson in finded_lessons if None not in lesson]
+        try:
+            my_sheet = read_excel(directory + filename)
+            matrix = convert_to_list_of_lists(my_sheet)
+            cropped_matrix = crop_matrix(matrix)
+            finded_lessons = find_lesson(cropped_matrix)
+            [lessons.append(lesson) for lesson in finded_lessons if None not in lesson]
+        except:
+            print(f'Error in {filename}')
+            continue
     
     final_array: list = []
     for lesson in lessons:

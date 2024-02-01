@@ -1,8 +1,8 @@
 import openpyxl
 from openpyxl.styles import Font, NamedStyle
 
-def create_table(filename: str, matrix: list):
     
+def create_table(filename: str, matrix: list):
     workbook = openpyxl.Workbook()
     sheet = workbook.active
     style: NamedStyle = NamedStyle(name="custom_style")

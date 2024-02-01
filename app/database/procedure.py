@@ -33,7 +33,7 @@ def get_tutor_variants(tutor: str):
     return _formats
 
 
-def get_matrix_with_times(tutor_formats: list, session):
+def get_matrix_with_times(tutor_formats: list, session, searchParam: str = 'tutor'):
     _days: list[str] = [
         'Понедельник', 'Вторник', 'Среда', 
         'Четверг', 'Пятница', 'Суббота'
@@ -43,18 +43,24 @@ def get_matrix_with_times(tutor_formats: list, session):
         day_times: set = set()
         for week in ['Числитель', 'Знаменатель']:
             for _tutor in tutor_formats:
-                times = session.query(Lesson.time).distinct().filter_by(
-                    day=day, week=week).filter(
-                        Lesson.lesson.like(f'%{_tutor}%')
-                ).order_by(Lesson.time.asc()).all()
+                if searchParam != 'tutor':
+                    times = session.query(Lesson.time).distinct().filter_by(
+                        day=day, week=week).filter(
+                            Lesson.group.like(f'%{_tutor}%')
+                        ).order_by(Lesson.time.asc()).all()
+                else:
+                    times = session.query(Lesson.time).distinct().filter_by(
+                        day=day, week=week).filter(
+                            Lesson.lesson.like(f'%{_tutor}%')
+                    ).order_by(Lesson.time.asc()).all()
                 for time in times:
                     if time[0] not in day_times:
                         day_times.add(time[0])
         _times: list = list(day_times)
         _times.sort()
         for time in _times: temp.append([time, day])
-        
-    return temp, len(_times)
+    print(len(temp), len(_times))
+    return temp, len(temp)
 
 
 def get_tutor_matrix(tutor: str):
@@ -64,7 +70,7 @@ def get_tutor_matrix(tutor: str):
         session.close()
         return False, None
     tutor_formats: list[str] = get_tutor_variants(tutor)
-    matrix, counter = get_matrix_with_times(tutor_formats, session)
+    matrix, counter = get_matrix_with_times(tutor_formats, session, 'tutor')
     if counter == 0:
         return None, None
     for row in matrix:
@@ -84,3 +90,26 @@ def get_tutor_matrix(tutor: str):
     return matrix, tutor_formats[0]
                     
                 
+def get_group_matrix(group: str):
+    session = get_session()
+    if session.query(Lesson).count() == 0:
+        session.close()
+        return False, None
+    matrix, counter = get_matrix_with_times([group], session, 'group')
+    if counter == 0:
+        return None, None
+    for row in matrix:
+        for week in ['Числитель', 'Знаменатель']:
+            result = None
+            for stringGroup in [group]:
+                search = f'%{stringGroup}%'
+                result = session.query(Lesson).filter_by(
+                    time=row[0], day=row[1], week=week
+                ).filter(Lesson.group.like(f'%{search}%')).first()
+            if result is not None:
+                row.append(f'{result.lesson}')
+            else:
+                row.append(None)
+    matrix.insert(0, ['Время', 'День', 'Числитель', 'Знаменатель'])
+    session.close()
+    return matrix
